@@ -102,8 +102,6 @@ app.controller('logtrail', function ($scope, kbnUrl, $route, $routeParams, es, c
       $scope.selected_index_pattern = selected_index_config.es.default_index;
       checkElasticsearch();    
     });
-
-    $scope.$watch('events', );
   };
 
   function checkElasticsearch() {
@@ -149,6 +147,7 @@ app.controller('logtrail', function ($scope, kbnUrl, $route, $routeParams, es, c
       index: selected_index_config.es.default_index
     };
 
+    console.debug("sending search request with params " + JSON.stringify(request));
     return $http.post(chrome.addBasePath('/logtrail/search'), request).then(function (resp) {
       if (resp.data.ok) {       
         updateEventView(resp.data.resp,actions,order);
@@ -275,6 +274,8 @@ app.controller('logtrail', function ($scope, kbnUrl, $route, $routeParams, es, c
       lastEventTime = null;
     }
 
+    trimEvents();
+
     $timeout(function () {
       updateViewInProgress = false;
     });
@@ -292,6 +293,26 @@ app.controller('logtrail', function ($scope, kbnUrl, $route, $routeParams, es, c
       }
     }
   };
+
+  function trimEvents() {
+    var eventCount = $scope.events.length;
+    if (eventCount > selected_index_config.max_events_to_keep_in_viewer) {
+        var noOfItemsToDelete = eventCount - selected_index_config.max_events_to_keep_in_viewer;
+        $scope.events.splice(0, noOfItemsToDelete);
+        var count = noOfItemsToDelete;
+        try {
+          eventIds.forEach(function (eventId) {
+            eventIds.delete(eventId);
+            count--;
+            if(count == 0) {
+              throw "Exception";
+            }
+          });
+        } catch (e) {
+          //Ignore
+        }
+    }
+  }
 
   $scope.isTimeRangeSearch = function () {
     return (selected_index_config != null && selected_index_config.default_time_range_in_days !== 0) || $scope.pickedDateTime != null;
@@ -441,8 +462,7 @@ app.controller('logtrail', function ($scope, kbnUrl, $route, $routeParams, es, c
       //When scroll bar search bottom
       if (angular.element($window).scrollTop() + angular.element($window).height() === angular.element($document).height()) {
         if ($scope.events.length > 0) {
-          var lastestEventTimestamp = Date.create($scope.events[$scope.events.length - 1].timestamp).getTime();
-          doSearch('gt', 'asc', ['append','scrollToView'], lastestEventTimestamp);
+          doSearch('gte', 'asc', ['append','scrollToView'], lastEventTime - ( selected_index_config.es_index_time_offset_in_seconds * 1000 ));
         }
         $scope.$apply(updateLiveTailStatus('Live'));
       } else {
@@ -492,7 +512,11 @@ app.controller('logtrail', function ($scope, kbnUrl, $route, $routeParams, es, c
     };
     $http.get(chrome.addBasePath('/logtrail/hosts'),params).then(function (resp) {
       if (resp.data.ok) {
-        $scope.hosts = resp.data.resp;
+        $scope.hosts = [];
+        for (var i = resp.data.resp.length - 1; i >= 0; i--) {
+          $scope.hosts.push(resp.data.resp[i].key);
+        }
+        $scope.hosts.sort();
       } else {
         console.error('Error while fetching hosts : ' , resp.data.resp.msg);
         $scope.errorMessage = 'Exception while fetching hosts : ' + resp.data.resp.msg;
