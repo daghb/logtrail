@@ -19,7 +19,7 @@
                 }
             },
             "field_decorations": [{
-                    "field": "host",
+                    "field": "hostname",
                     "pattern": "/(.*)/",
                     "replace": "<a ng-click=\"onHostSelected('$1')\">$1</a>"
                 },
@@ -60,7 +60,7 @@
                 }
             },
             "field_decorations": [{
-                    "field": "host",
+                    "field": "hostname",
                     "pattern": "/(.*)/",
                     "replace": "<a ng-click=\"onHostSelected('$1')\">$1</a>"
                 },
