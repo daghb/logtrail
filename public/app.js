@@ -220,7 +220,7 @@ app
                 // escape existing html content
                 event.display_timestamp = escapeHTML(event.display_timestamp);
                 event.program = escapeHTML(event.program);
-                event.host = escapeHTML(event.host);
+                event.hostname = escapeHTML(event.hostname);
                 event.message = escapeHTML(event.message);
                 event['isDecorated'] = true;
 
@@ -240,7 +240,7 @@ app
                         result = result.replace(/\{\{event.display_timestamp\}\}/g, event.display_timestamp);
                         result = result.replace(/\{\{event.timestamp\}\}/g, event.timestamp);
                         result = result.replace(/\{\{event.program\}\}/g, event.program);
-                        result = result.replace(/\{\{event.host\}\}/g, event.host);
+                        result = result.replace(/\{\{event.hostname\}\}/g, event.hostname);
 
                         // replace by regular expressions
                         var modifiers = replacementdef.pattern.replace(/.*\/([a-zA-Z]*)$/, "$1");
