@@ -84,20 +84,23 @@ app
                     }
                     if ($routeParams.i) {
                         for (var i = config.index_patterns.length - 1; i >= 0; i--) {
-                            if (config.index_patterns[i].es.default_index === $routeParams.i) {
-                                selected_index_config = config.index_patterns[i];
+                            if (config.index_patterns[i].es.default_index === $routeParams.i || i == 0) {
+                                selectIndex(i);
                                 break;
                             }
                         }
+                    } else {
+                        selectIndex(0);
                     }
-                    if (selected_index_config === null) {
-                        selected_index_config = config.index_patterns[0];
-                    }
-                    $scope.selected_index_pattern = selected_index_config.es.default_index;
-                    $scope.selected_index_field_decorations = selected_index_config.field_decorations;
                     checkElasticsearch();
                 });
             };
+
+            function selectIndex(indexOfConfigIndex) {
+                selected_index_config = config.index_patterns[indexOfConfigIndex];
+                $scope.selected_index_pattern = selected_index_config.es.default_index;
+                $scope.selected_index_field_decorations = selected_index_config.field_decorations;
+            }
 
             function checkElasticsearch() {
                 var params = {
@@ -452,17 +455,17 @@ app
             };
 
             $scope.onSettingsChange = function(requestedIndex) {
-                if (requestedIndex !== selected_index_config.es.default_index) {
+                if (requestedIndex != null && requestedIndex !== selected_index_config.es.default_index) {
                     for (var i = config.index_patterns.length - 1; i >= 0; i--) {
                         if (config.index_patterns[i].es.default_index === requestedIndex) {
-                            selected_index_config = config.index_patterns[i];
+                            selectIndex(i);
                             break;
                         }
                     }
                 } else if ($scope.selected_index_pattern !== selected_index_config.es.default_index) {
                     for (var i = config.index_patterns.length - 1; i >= 0; i--) {
                         if (config.index_patterns[i].es.default_index === $scope.selected_index_pattern) {
-                            selected_index_config = config.index_patterns[i];
+                            selectIndex(i);
                             break;
                         }
                     }
@@ -533,7 +536,7 @@ app
                             var lastestEventTimestamp = Date.create($scope.events[$scope.events.length - 1].timestamp).getTime();
                             doSearch('gt', 'asc', ['append', 'scrollToView'], lastestEventTimestamp);
                         }
-                        $scope.$apply(updateLiveTailStatus('Live'));
+                        $scope.$apply(updateLiveTailStatus('Default'));
                     } else {
                         //When scroll bar is in middle
                         $scope.$apply(updateLiveTailStatus('Go Live'));
@@ -551,6 +554,13 @@ app
             });
 
             function updateLiveTailStatus(status) {
+                if (status === 'Default') {
+                    if (selected_index_config.tail_default_status === "Pause") {
+                        status = 'Pause';
+                    } else {
+                        status = 'Live';
+                    }
+                }
                 $scope.liveTailStatus = status;
             };
 

@@ -8,6 +8,7 @@
             "tail_interval_in_seconds": 10,
             "max_buckets": 500,
             "nested_objects": false,
+            "tail_default_status": "Pause",
             "default_time_range_in_days": 0,
             "fields": {
                 "mapping": {
@@ -49,6 +50,7 @@
             "tail_interval_in_seconds": 10,
             "max_buckets": 500,
             "nested_objects": false,
+            "tail_default_status": "Pause",
             "default_time_range_in_days": 0,
             "fields": {
                 "mapping": {
@@ -72,7 +74,7 @@
                 {
                     "field": "display_timestamp",
                     "pattern": "/(.*)/",
-                    "replace": "<span><a target=\"es\" href=\"http://ss-log01:9200/message/carweb/_search?pretty=true&q=_id:{{event.id}}\">$1</a></span>"
+                    "replace": "<span><a target=\"es\" href=\"http://ss-log01:9200/message/_search?pretty=true&q=_id:{{event.id}}\">$1</a></span>"
                 },
                 {
                     "field": "message",
